@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.1.31911.260
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Channel9VideoArchiveRetriever", "Channel9VideoArchiveRetriever\Channel9VideoArchiveRetriever.fsproj", "{52DD1333-B187-40D5-8E16-D73AE8A0F9AE}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{52DD1333-B187-40D5-8E16-D73AE8A0F9AE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{52DD1333-B187-40D5-8E16-D73AE8A0F9AE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{52DD1333-B187-40D5-8E16-D73AE8A0F9AE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{52DD1333-B187-40D5-8E16-D73AE8A0F9AE}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {45DFC4B1-6331-4943-A07A-E574B025AF4C}
+	EndGlobalSection
+EndGlobal
