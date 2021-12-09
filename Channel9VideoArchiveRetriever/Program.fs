@@ -28,29 +28,29 @@ let wayBackMachineUrls : string seq =
     |> Seq.map( fun u -> apiBase + u )
 
 let getUrlsFromWayBackMachine : string seq =
+    let httpClient = new System.Net.Http.HttpClient()
+
     let getAsync (url:string) = 
         async {
-            let httpClient = new System.Net.Http.HttpClient()
             let! response = httpClient.GetAsync(url) |> Async.AwaitTask
             response.EnsureSuccessStatusCode () |> ignore
             let! content = response.Content.ReadAsStringAsync() |> Async.AwaitTask
             return content
         }
 
-    let handleSingleResult (url : string) =
-        let retrievedResult = Async.RunSynchronously ( getAsync url )
-        let parsedResult = WaybackMachineJsonProvider.Parse(retrievedResult)
-        parsedResult.ArchivedSnapshots.Closest.Url
+    let handleSingleResult (url : string) : string =
+        try
+            printfn "Invoking the Wayback Machine API for: %A" url
+            let retrievedResult = Async.RunSynchronously ( getAsync url )
+            let parsedResult = WaybackMachineJsonProvider.Parse(retrievedResult)
+            parsedResult.ArchivedSnapshots.Closest.Url
+        with
+            | :? System.Exception ->
+                printfn "Url Invoke Failed for %A" url
+                ""
 
     wayBackMachineUrls
     |> Seq.map(handleSingleResult)
-
-(*
-let printFirst10ResultsFromWayBackMachine =
-    getUrlsFromWayBackMachine
-    |> Seq.take 10
-    |> Seq.iter(fun r -> printfn "%A" r)
-*)
 
 let getAllVideoPageLinksFromUrl (url : string) : string seq =
     let htmlPage = HtmlDocument.Load(url)
@@ -61,13 +61,11 @@ let getAllVideoPageLinksFromUrl (url : string) : string seq =
 
 let getChannel9VideoInfoFromUrl (url : string) : Channel9VideoInfo option = 
     try
-        printfn "Getting Channel9VideoInfo for %A" url
-
         let htmlPage = HtmlDocument.Load(url)
+        printfn "Getting Channel9 Video Info for: %A" url
 
         let title : string = 
             htmlPage.Body().AttributeValue("data-episodetitle")
-
 
         let url : string = 
             htmlPage.Descendants("main")
@@ -79,7 +77,10 @@ let getChannel9VideoInfoFromUrl (url : string) : Channel9VideoInfo option =
         Some { Name = title; VideoUrl = url }
     with 
         | :? System.ArgumentException -> 
-            printfn "System Argument Exception for %A" url; 
+            printfn "System.ArgumentException for %A" url; 
+            None
+        | :? System.Net.WebException -> 
+            printfn "System.Net.WebException for %A" url; 
             None
 
 let persistChannel9VideoInfosAsJson (videos: Channel9VideoInfo option list) (path : string) : unit =
@@ -89,7 +90,7 @@ let persistChannel9VideoInfosAsJson (videos: Channel9VideoInfo option list) (pat
 
     File.WriteAllText(path, (serializeChannel9VideoInfos videos))
 
-let getVideosAndPersist (path : string ): unit =
+let getVideosAndPersist (path : string) : unit =
     let channel9Infos : Channel9VideoInfo option list =  
         getUrlsFromWayBackMachine
         |> Seq.map(fun x -> (getAllVideoPageLinksFromUrl x ) |> Seq.map(fun x -> getChannel9VideoInfoFromUrl x))
@@ -97,7 +98,40 @@ let getVideosAndPersist (path : string ): unit =
         |> Seq.toList
     persistChannel9VideoInfosAsJson channel9Infos path
 
+let convertJsonToReadMe (pathOfJson : string) (outputPath : string): unit =
+    // Read in file 
+    let text = File.ReadAllText(pathOfJson)
+    let allChannelInfos : Channel9VideoInfo option list = JsonSerializer.Deserialize text
+
+    printfn "%A" allChannelInfos
+
+    let header1 = "| Name | Url |"
+    let header2 = "| :---: | :---: |" 
+
+    let allChannelInfosAsStrings = 
+        allChannelInfos
+        |> List.filter(fun x -> x.IsSome)
+        |> List.map(fun x -> $"| {x.Value.Name} | {x.Value.VideoUrl} |") 
+
+    let listToPersist : string list =
+        [ header1; header2 ]
+        |> List.append allChannelInfosAsStrings
+
+    File.WriteAllLines(outputPath, listToPersist)
+
 [<EntryPoint>]
 let main argv =
-    getVideosAndPersist (Path.Combine(__SOURCE_DIRECTORY__, "output", "Result.json"))
+    let listOfUrls : string = 
+        let allUrls = 
+            getUrlsFromWayBackMachine
+            |> Seq.toList
+        JsonSerializer.Serialize allUrls
+    File.WriteAllText(Path.Combine(__SOURCE_DIRECTORY__, "output", "Urls_2001ThruHighestPageNumber.json"), listOfUrls)
+
+    (*
+    let testJson =  Path.Combine(__SOURCE_DIRECTORY__, "output", "Test.json")
+    let output = Path.Combine(__SOURCE_DIRECTORY__, "output", "Test.md")
+    convertJsonToReadMe testJson output
+    *)
+    
     0 // return an integer exit code
