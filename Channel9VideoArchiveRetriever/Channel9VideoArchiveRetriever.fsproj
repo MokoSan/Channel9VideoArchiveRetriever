@@ -6,11 +6,17 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="DSL.fs" />
+    <Compile Include="UrlLogic.fs" />
+    <Compile Include="PageLogic.fs" />
+    <Compile Include="Persistence.fs" />
+    <Compile Include="JsonToMdConversion.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="FSharp.Data" Version="4.2.6" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
   </ItemGroup>
 
 </Project>
