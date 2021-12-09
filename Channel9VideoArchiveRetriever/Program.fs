@@ -11,11 +11,11 @@ let baseUrl = "https://channel9.msdn.com/Browse/AllContent"
 [<Literal>]
 let apiBase = "https://archive.org/wayback/available?url="
 [<Literal>]
-let highestPageNumber = 2811
+let highestPageNumber = 2690 
 [<Literal>]
 let webArchiveBase = "http://web.archive.org/"
 
-type Channel9VideoInfo = { Name : string; VideoUrl: string; }
+type Channel9VideoInfo = { Name : string; VideoUrl: string; DateOfRelease: string; Author: string }
 
 let oldPagesToLookUp : string seq = 
     let seqOfPages = 
@@ -59,6 +59,11 @@ let getAllVideoPageLinksFromUrl (url : string) : string seq =
     |> Seq.map (fun x -> x.Elements("a").Head.AttributeValue("href"))
     |> Seq.map(fun x -> webArchiveBase + x )
 
+let getAllVideoPageLinksFromAllUrls (urls : string seq) : string seq =
+    urls
+    |> Seq.map(getAllVideoPageLinksFromUrl)
+    |> Seq.concat
+
 let getChannel9VideoInfoFromUrl (url : string) : Channel9VideoInfo option = 
     try
         let htmlPage = HtmlDocument.Load(url)
@@ -74,13 +79,26 @@ let getChannel9VideoInfoFromUrl (url : string) : Channel9VideoInfo option =
             |> Seq.map(fun x -> x.Elements("a").Head.AttributeValue("href"))
             |> Seq.head
 
-        Some { Name = title; VideoUrl = url }
+        let dateOfRelease = 
+            htmlPage.Descendants("div")
+            |> Seq.filter(fun x -> x.HasClass("releaseDate"))
+            |> Seq.map(fun x -> x.InnerText())
+            |> Seq.head
+
+        let author =
+            htmlPage.Descendants("div")
+            |> Seq.filter(fun x -> x.HasClass("authors"))
+            |> Seq.filter(fun x -> x.Elements("a").Length > 0)
+            |> Seq.map(fun x -> x.Elements("a").Head.InnerText())
+            |> Seq.head
+            
+        Some { Name = title; VideoUrl = url; DateOfRelease = dateOfRelease; Author = author}
     with 
-        | :? System.ArgumentException -> 
-            printfn "System.ArgumentException for %A" url; 
+        | :? System.ArgumentException as e -> 
+            printfn "System.ArgumentException for %A - %A" url e; 
             None
-        | :? System.Net.WebException -> 
-            printfn "System.Net.WebException for %A" url; 
+        | :? System.Net.WebException as e -> 
+            printfn "System.Net.WebException for %A - %A" url e; 
             None
 
 let persistChannel9VideoInfosAsJson (videos: Channel9VideoInfo option list) (path : string) : unit =
@@ -121,17 +139,7 @@ let convertJsonToReadMe (pathOfJson : string) (outputPath : string): unit =
 
 [<EntryPoint>]
 let main argv =
-    let listOfUrls : string = 
-        let allUrls = 
-            getUrlsFromWayBackMachine
-            |> Seq.toList
-        JsonSerializer.Serialize allUrls
-    File.WriteAllText(Path.Combine(__SOURCE_DIRECTORY__, "output", "Urls_2001ThruHighestPageNumber.json"), listOfUrls)
-
-    (*
-    let testJson =  Path.Combine(__SOURCE_DIRECTORY__, "output", "Test.json")
-    let output = Path.Combine(__SOURCE_DIRECTORY__, "output", "Test.md")
-    convertJsonToReadMe testJson output
-    *)
-    
+    let channel9Video = 
+        getChannel9VideoInfoFromUrl "http://web.archive.org/web/20200902211220/https://channel9.msdn.com/blogs/dan/c9-bytes-lisa-feigenbaum"
+    |> ignore
     0 // return an integer exit code
