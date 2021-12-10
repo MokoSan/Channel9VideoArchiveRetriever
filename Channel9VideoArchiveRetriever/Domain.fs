@@ -1,4 +1,4 @@
-module DSL 
+module Domain 
 
     type Channel9VideoInfo = { Name          : string; 
                                VideoUrl      : string; 

@@ -6,11 +6,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="DSL.fs" />
+    <Compile Include="Domain.fs" />
     <Compile Include="UrlLogic.fs" />
     <Compile Include="PageLogic.fs" />
     <Compile Include="Persistence.fs" />
     <Compile Include="JsonToMdConversion.fs" />
+    <Compile Include="Mine.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 

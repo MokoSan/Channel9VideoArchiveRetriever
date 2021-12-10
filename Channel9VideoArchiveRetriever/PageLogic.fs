@@ -1,6 +1,6 @@
 module PageLogic
 
-open DSL
+open Domain 
 open FSharp.Data
 open System.IO
 open System.Text.Json

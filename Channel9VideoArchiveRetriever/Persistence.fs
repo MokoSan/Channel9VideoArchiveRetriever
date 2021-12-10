@@ -3,7 +3,7 @@ module Persistence
 open System.IO
 open System.Text.Json
 open Newtonsoft.Json
-open DSL
+open Domain 
 
 let BasePath = Path.Combine(__SOURCE_DIRECTORY__, "output", "Pages")
 
