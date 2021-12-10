@@ -54,6 +54,7 @@ let getUrlsFromWayBackMachine : string seq =
     |> Seq.map(handleSingleResult)
 
 let getAllVideoPageLinksFromUrl (url : string) : string seq =
+    printfn "    Getting Video Pages for URL: %A" url 
     let htmlPage = HtmlDocument.Load(url)
     htmlPage.Descendants("article")
     |> Seq.filter(fun x -> x.Elements("a").Length > 0)
@@ -62,6 +63,7 @@ let getAllVideoPageLinksFromUrl (url : string) : string seq =
 
 let getAllVideoPageLinksFromAllUrls (urls : string seq) : string seq =
     urls
+    |> Seq.take 200 // TODO: Remove this.
     |> Seq.map(getAllVideoPageLinksFromUrl)
     |> Seq.concat
 

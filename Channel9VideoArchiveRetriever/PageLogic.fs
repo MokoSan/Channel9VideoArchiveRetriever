@@ -33,7 +33,11 @@ let getChannel9VideoInfoFromPageUrl (url : string) : Channel9VideoInfo option =
             |> Seq.map(fun x -> x.Elements("a").Head.InnerText())
             |> Seq.head
             
-        Some { Name = title; VideoUrl = url; DateOfRelease = dateOfRelease; Author = author}
+        Some { Name          = title; 
+               VideoUrl      = url; 
+               DateOfRelease = dateOfRelease; 
+               Author        = author; 
+               OriginalUrl   = url; }
     with 
         | :? System.ArgumentException as e -> 
             printfn "System.ArgumentException for %A - %A" url e; 
@@ -41,13 +45,10 @@ let getChannel9VideoInfoFromPageUrl (url : string) : Channel9VideoInfo option =
         | :? System.Net.WebException as e -> 
             printfn "System.Net.WebException for %A - %A" url e; 
             None
+        | :? System.Exception as e ->
+            printfn "System.Exception for %A - %A" url e; 
+            None
 
-let getChannel9VideoInfoFromUrls (urls : string seq) : Channel9VideoInfo option seq  =
+let getChannel9VideoInfoFromUrls (urls : string seq) (parentUrl: string): Channel9VideoInfo option seq  =
     urls
     |> Seq.map(getChannel9VideoInfoFromPageUrl)
-
-let getChannel9VideoInfoFromFile (path : string) : Channel9VideoInfo option seq =
-    let allLinks = File.ReadAllText path
-    let deserializedJson = JsonSerializer.Deserialize allLinks
-    printfn "%A" deserializedJson
-    Seq.empty 
