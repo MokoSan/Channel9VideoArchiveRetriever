@@ -15,6 +15,6 @@ let mineForKeyword (keyword: string) (inputPaths: string seq) (outputPath: strin
         inputPaths
         |> Seq.map(readAndDeserializeFromPath)
         |> Seq.concat
-        |> Seq.filter(fun x -> x.IsSome && x.Value.Name.Contains(keyword))
+        |> Seq.filter(fun x -> x.IsSome && x.Value.Name.ToLower().Contains(keyword))
 
     convertChannel9InfosToReadMe channel9VideoInfos outputPath
